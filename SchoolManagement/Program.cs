@@ -1,6 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using SchoolManagement.Persistence;
+using System.Text.Json.Serialization;
 
 namespace SchoolManagement
 {
@@ -16,6 +17,16 @@ namespace SchoolManagement
 
             builder.Services.AddDbContext<SchoolManagementDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SchoolManagementDB")));
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
+            // Add controllers and configure enums to serialize as strings
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
