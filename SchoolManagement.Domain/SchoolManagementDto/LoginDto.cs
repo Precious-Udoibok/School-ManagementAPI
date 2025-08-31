@@ -5,5 +5,6 @@ namespace SchoolManagement.Domain.SchoolManagementDto
     {
         public string Email { get; set; } = default;
         public string Password { get; set; } = default;
+        public required string Role { get; set; }
     }
 }

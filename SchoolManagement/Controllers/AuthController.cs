@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -36,6 +37,7 @@ namespace SchoolManagement.API.Controllers
 
         //Implement register enpoint
         [HttpPost("register/student")]
+        [AllowAnonymous]
         public async Task<ActionResult> RegisterStudent([FromBody] UserRegistrationDto UserDto)
         {
 
@@ -69,6 +71,43 @@ namespace SchoolManagement.API.Controllers
             return Ok(new { Message = "Student Account Registered successfully.", StudentId = user_student.Id });
         }
 
+
+        [HttpPost("register/lecturer")]
+        [AllowAnonymous]
+        public async Task<ActionResult> RegisterLecturer([FromBody] LecturerRegistrationDto LecturerUserDto)
+        {
+
+            //Validate Input
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            //Check if the email and password are provide
+            var isLecturerUserExist = await _context.Lecturer.AnyAsync(em => em.Email == LecturerUserDto.Email);
+
+            if (isLecturerUserExist)
+            {
+                return BadRequest("Email is already in use");
+            }
+
+            //Create User Object
+            var user_lecturer = new Lecturer
+            {
+                FirstName = LecturerUserDto.FirstName,
+                LastName = LecturerUserDto.LastName,
+                Email = LecturerUserDto.Email,
+                Gender = LecturerUserDto.Gender,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(LecturerUserDto.PasswordHash)
+            };
+
+            //Add to the db set
+            _context.Lecturer.Add(user_lecturer);
+            await _context.SaveChangesAsync();
+            return Ok(new { Message = " Account Registered successfully.", StudentId = user_lecturer.Id });
+        }
+
+
         //Implement register enpoint
         //Check if the email and password are provide
         //Find the user by email in the db
@@ -76,7 +115,7 @@ namespace SchoolManagement.API.Controllers
         //generate token - define expireation time
 
         [HttpPost("Login")]
-
+        [AllowAnonymous]
         public async Task<ActionResult> Login(LoginDto LoginRequest)
         {
             //Check if the email and password are provide
@@ -90,28 +129,29 @@ namespace SchoolManagement.API.Controllers
             //this retun a bool
             var isLoginUserExist = await _context.Students.AnyAsync(em => em.Email == LoginRequest.Email);
 
-            //Get the actual value
-            var user = await _context.Students.FirstOrDefaultAsync(em => em.Email == LoginRequest.Email);
+            //Get the actual value for student 
+            var user_student = await _context.Students.FirstOrDefaultAsync(em => em.Email == LoginRequest.Email);
 
-            if (user == null)
+            if (user_student == null)
             {
                 return Unauthorized("Invalid Email or Password");
             }
 
-            if (!VerifyPassword(LoginRequest.Password, user.PasswordHash!))
+            if (!VerifyPassword(LoginRequest.Password, user_student.PasswordHash!))
             {
                 return Unauthorized("Invalid Email or Password");
 
             }
 
             //Create a private method to generate a string
-            var token = GenerateJwtToken(user);
+            var token = GenerateJwtToken(user_student);
 
             return Ok(new LoginResponseDto
             {
                 Token = token,
-                Email = user.Email,
-                Id = user.Id
+                Email = user_student.Email,
+                Role = user_student.Role,
+                Id = user_student.Id
             });
 
         }

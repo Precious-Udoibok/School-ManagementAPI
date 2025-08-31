@@ -17,6 +17,7 @@ namespace SchoolManagement.Domain.UserManagement
         public string? PasswordHash { set; get; }
         public int? CollegeId { get; set; }   // Foreign key
         public College? College { get; set; } = default!; // Navigation property
+        public Role Role { get; set; } = Role.Student;
 
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid Email Format.")]

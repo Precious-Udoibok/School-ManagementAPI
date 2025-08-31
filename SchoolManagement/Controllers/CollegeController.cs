@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagement.Domain;
@@ -21,6 +22,7 @@ namespace SchoolManagement.API.Controllers
 
         //Create operation
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<College>> CreateCollege(CollegeCreateDto dto)
 
         {
@@ -47,6 +49,7 @@ namespace SchoolManagement.API.Controllers
 
         //Fetch by id
         [HttpGet("id")]
+        [Authorize]
         public async Task<ActionResult<College>> GetCollegeById(int id)
         {
 
@@ -62,6 +65,7 @@ namespace SchoolManagement.API.Controllers
 
         //Fetch all
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<List<College>>> GetAllCollege()
         {
             return await _context.Colleges.ToListAsync();
@@ -69,6 +73,7 @@ namespace SchoolManagement.API.Controllers
 
         //Update operation
         [HttpPut]
+        [Authorize]
         public async Task<ActionResult> UpdateCollege(int id, CollegeCreateDto dto)
         {
             try
@@ -100,7 +105,7 @@ namespace SchoolManagement.API.Controllers
 
         //DELETE Operation
         [HttpDelete("id")]
-
+        [Authorize]
         public async Task<IActionResult> DeleteCollege(int id)
         {
             var college = await _context.Colleges.FindAsync(id);
